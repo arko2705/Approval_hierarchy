@@ -1,0 +1,65 @@
+/* Custom styles for Approval Hierarchy System */
+
+/* Add some space after the header */
+header {
+    margin-bottom: 2rem;
+}
+
+/* Style for card elements */
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Style for the hierarchy view */
+.employee-card {
+    transition: all 0.2s ease;
+}
+
+.employee-card:hover {
+    background-color: #f0f0f0;
+}
+
+/* Improve table readability */
+.table {
+    font-size: 0.95rem;
+}
+
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+/* Status badge styles */
+.badge {
+    padding: 0.5em 0.75em;
+    font-size: 0.8rem;
+}
+
+/* Form styles */
+.form-label {
+    font-weight: 500;
+}
+
+/* Improve button spacing in groups */
+.btn-group .btn {
+    margin-right: 0.25rem;
+}
+
+/* Add focus styles for accessibility */
+:focus {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+}
+
+/* Footer styling */
+footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
