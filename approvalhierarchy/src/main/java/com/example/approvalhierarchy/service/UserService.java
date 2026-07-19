@@ -59,6 +59,23 @@ public class UserService {
     }
 
     @Transactional
+    public User updateUserDetails(User user, String newPassword, String roleName) {
+        if (newPassword != null && !newPassword.trim().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(newPassword));
+        }
+        
+        if (roleName != null && !roleName.trim().isEmpty()) {
+            Role userRole = roleRepository.findByName(roleName)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            Set<Role> roles = new HashSet<>();
+            roles.add(userRole);
+            user.setRoles(roles);
+        }
+        
+        return userRepository.save(user);
+    }
+
+    @Transactional
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }

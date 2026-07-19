@@ -22,59 +22,71 @@
             </div>
         </header>
 
-        <div class="pb-3 mb-4 border-bottom">
-            <h2 th:text="${employee.id != null ? 'Edit Employee' : 'Add Employee'}">Add/Edit Employee</h2>
-        </div>
-
         <div class="row">
             <div class="col-md-6 offset-md-3">
-                <form th:action="${employee.id != null ? '/employees/edit/' + employee.id : '/employees/add'}" 
-                      th:object="${employee}" 
-                      method="post">
-                    
-                    <!-- Hidden field for ID when editing -->
-                    <input type="hidden" th:field="*{id}" />
-                    
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="name" th:field="*{name}" required>
-                        <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" th:field="*{email}" required>
-                        <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="position" class="form-label">Position</label>
-                        <input type="text" class="form-control" id="position" th:field="*{position}">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="department" class="form-label">Department</label>
-                        <input type="text" class="form-control" id="department" th:field="*{department}">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="manager" class="form-label">Manager</label>
-                        <select class="form-select" id="manager" th:field="*{manager}">
-                            <option value="">-- No Manager --</option>
-                            <option th:each="mgr : ${managers}" 
-                                    th:if="${mgr.id != employee.id}" 
-                                    th:value="${mgr.id}" 
-                                    th:text="${mgr.name + ' (' + mgr.position + ')'}">
-                                Manager Name
-                            </option>
-                        </select>
-                    </div>
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a th:href="@{/employees}" class="btn btn-secondary me-md-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Save</button>
-                    </div>
-                </form>
+    <form th:action="${dto.employee.id != null} ? @{/employees/edit/{id}(id=${dto.employee.id})} : @{/employees/add}" th:object="${dto}" method="post">
+    
+    <h4 class="mb-3">1. Employee Details</h4>
+    <div class="mb-3">
+        <label for="name" class="form-label">Full Name</label>
+        <input type="text" class="form-control" id="name" th:field="*{employee.name}" required>
+    </div>
+    
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" th:field="*{employee.email}" required>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="position" class="form-label">Position</label>
+            <input type="text" class="form-control" id="position" th:field="*{employee.position}" required>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="department" class="form-label">Department</label>
+            <input type="text" class="form-control" id="department" th:field="*{employee.department}" required>
+        </div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="manager" class="form-label">Reports To (Manager)</label>
+        <select class="form-select" id="manager" th:field="*{employee.manager}">
+            <option value="">-- No Manager (Top Level) --</option>
+            <option th:each="mgr : ${managers}" 
+                    th:value="${mgr.id}" 
+                    th:text="${mgr.name + ' (' + mgr.position + ')'}">
+            </option>
+        </select>
+    </div>
+
+    <hr class="my-4">
+
+    <h4 class="mb-3">2. Login Details</h4>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" th:field="*{username}" required>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" th:field="*{password}" th:required="${dto.employee.id == null}">
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="role" class="form-label">Role</label>
+            <select class="form-select" id="role" th:field="*{role}" required>
+                <option value="USER">Regular User</option>
+                <option value="MANAGER">Manager</option>
+                <option value="HR">HR Staff</option>
+                <option value="ADMIN">Administrator</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+        <a th:href="@{/employees}" class="btn btn-secondary me-md-2">Cancel</a>
+        <button type="submit" class="btn btn-primary">Create Employee</button>
+    </div>
+</form>
             </div>
         </div>
 

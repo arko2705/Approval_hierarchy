@@ -26,15 +26,22 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {// just creates a reusable tool for now that can hash passwords
         return new BCryptPasswordEncoder();
     }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();// DaoAuthenticationProvider, Spring
+                                                                                 // Security’s standard provider for
+                                                                                 // username/password authentication
+                                                                                 // against a database.
+        authProvider.setUserDetailsService(userDetailsService);// Links provider to your custom UserDetailsServiceImpl
+                                                               // so it knows how to load a user (username, password,
+                                                               // roles) from the DB
+        authProvider.setPasswordEncoder(passwordEncoder());// Supplies BCrypt password encoder (defined in
+                                                           // passwordEncoder())so provider can hash submitted
+                                                           // password and compare it to stored hash
         return authProvider;
     }
 
@@ -46,26 +53,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
-                .requestMatchers("/register", "/login").permitAll()
-                .requestMatchers("/").authenticated()
-                .requestMatchers("/employees/**").hasAnyRole("MANAGER", "HR", "ADMIN")
-                .requestMatchers("/requests/**").authenticated()
-                .requestMatchers("/hierarchy/**").hasAnyRole("MANAGER", "ADMIN")
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
-            )
-            .formLogin(form -> form
-                .loginPage("/login")
-                .defaultSuccessUrl("/")
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                .logoutSuccessUrl("/login?logout")
-                .permitAll()
-            );
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/login").permitAll()
+                        .requestMatchers("/").authenticated()
+                        .requestMatchers("/employees/**").hasAnyRole("MANAGER", "HR", "ADMIN")
+                        .requestMatchers("/requests/**").authenticated()
+                        .requestMatchers("/hierarchy/**").hasAnyRole("MANAGER", "ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/")
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                        .logoutSuccessUrl("/login?logout")
+                        .permitAll());
 
         return http.build();
     }

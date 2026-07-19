@@ -79,8 +79,9 @@
 
                 <div th:if="${topManager != null and not #lists.isEmpty(topManager.subordinates)}" th:remove="tag">
                     <ul>
-                        <li th:each="manager : ${topManager.subordinates}"
-                            th:insert="~{employee/fragments/hierarchy-node :: employee-node(manager=${manager})}"></li>
+                        <li th:each="manager : ${topManager.subordinates}">
+                            <div th:insert="~{employee/fragments/hierarchy-node :: employee-node(nodeEmployee=${manager})}"></div>
+                        </li>
                     </ul>
                 </div>
             </li>

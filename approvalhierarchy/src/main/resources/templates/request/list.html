@@ -42,17 +42,7 @@ th:text="${request.status != null ? request.status.name() : 'N/A'}">Status</span
 <td th:text="${#temporals.format(request.createdAt, 'dd-MM-yyyy HH:mm')}"></td>
 <td>
 <a th:href="@{'/requests/view/' + ${request.id}}" class="btn btn-sm btn-info">View</a>
-<a th:if="${request.status != null && request.status.name() == 'PENDING'}"
-th:href="@{'/requests/approve/' + ${request.id}}"
-class="btn btn-sm btn-success ms-1">Approve</a>
-<a th:if="${request.status != null && request.status.name() == 'PENDING'}"
-th:href="@{'/requests/reject/' + ${request.id}}"
-class="btn btn-sm btn-danger ms-1">Reject</a>
-<a th:if="${request.status != null && request.status.name() == 'PENDING'}"
-th:href="@{'/requests/reassign/' + ${request.id}}"
-class="btn btn-sm btn-warning ms-1">Reassign</a>
-<a th:href="@{'/requests/cancel/' + ${request.id}}"
-class="btn btn-sm btn-secondary ms-1">Cancel</a>
+<span th:if="${request.requestor.id == currentEmployeeId and request.status != null and request.status.name() == 'PENDING'}" class="ms-1 text-muted small fst-italic">You made this request. Please Await it to be handled.</span>
 </td>
 </tr>
 </tbody>

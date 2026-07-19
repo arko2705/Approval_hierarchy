@@ -19,6 +19,14 @@
                     <a class="me-3 py-2 text-dark text-decoration-none" th:href="@{/requests}">Requests</a>
                     <a class="py-2 text-dark text-decoration-none" th:href="@{/employees/hierarchy}">Hierarchy</a>
                 </nav>
+                <div class="d-inline-flex align-items-center ms-md-4 border-start ps-4">
+                    <span class="me-3 text-muted" th:if="${currentUser != null}">
+                        Logged in as: <strong th:text="${currentEmployee != null ? currentEmployee.name : currentUser.username}">User</strong>
+                    </span>
+                    <form th:action="@{/logout}" method="post" class="m-0">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Log Out</button>
+                    </form>
+                </div>
             </div>
         </header>
 

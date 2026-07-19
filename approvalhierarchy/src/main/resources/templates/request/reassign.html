@@ -52,12 +52,7 @@
                         </select>
                     </div>
                     
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="dueTounavailability" name="dueTounavailability" value="true">
-                        <label class="form-check-label" for="dueTounavailability">
-                            Current approver is unavailable (will mark as escalated)
-                        </label>
-                    </div>
+
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a th:href="@{/requests/view/{id}(id=${request.id})}" class="btn btn-secondary me-md-2">Cancel</a>

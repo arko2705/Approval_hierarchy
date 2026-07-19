@@ -32,6 +32,15 @@
                     <!-- Hidden fields -->
                     <input type="hidden" th:field="*{id}" />
                     
+                    <div th:if="${!hasManager}" class="alert alert-danger mb-4">
+                        <h4 class="alert-heading">No Supervisor Assigned</h4>
+                        <p>Buddy your practically boss and have no immediate supervisors. Js take the vacations lil bro</p>
+                        <hr>
+                        <p class="mb-0">Please contact HR or your system administrator to update your profile.</p>
+                    </div>
+
+                    <div th:if="${hasManager}">
+                    
                     <div class="mb-3">
                         <label for="title" class="form-label">Title</label>
                         <input type="text" class="form-control" id="title" th:field="*{title}" required>
@@ -43,38 +52,13 @@
                         <textarea class="form-control" id="description" th:field="*{description}" rows="4"></textarea>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="requestor" class="form-label">Requestor</label>
-                        <select class="form-select" id="requestor" th:field="*{requestor}" required>
-                            <option value="">-- Select Requestor --</option>
-                            <option th:each="employee : ${employees}" 
-                                    th:value="${employee.id}" 
-                                    th:text="${employee.name + ' (' + employee.position + ')'}">
-                                Employee Name
-                            </option>
-                        </select>
-                        <div class="text-danger" th:if="${#fields.hasErrors('requestor')}" th:errors="*{requestor}"></div>
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> You will automatically be set as the requestor, and this request will be sent to your immediate manager for approval.
                     </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Unavailable Managers</label>
-                        <div class="alert alert-info">
-                            Select any managers who are currently unavailable. The request will be escalated to the next available person in the hierarchy.
-                        </div>
-                        <div class="form-check" th:each="employee : ${employees}" th:if="${employee.isManager()}">
-                            <input class="form-check-input" type="checkbox" 
-                                   name="unavailableManagers" th:value="${employee.id}" 
-                                   th:id="'manager-' + ${employee.id}">
-                            <label class="form-check-label" th:for="'manager-' + ${employee.id}" 
-                                   th:text="${employee.name + ' (' + employee.position + ')'}">
-                                Manager Name
-                            </label>
-                        </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a th:href="@{/}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary" th:if="${hasManager}">Submit Request</button>
                     </div>
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a th:href="@{/requests}" class="btn btn-secondary me-md-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Submit Request</button>
                     </div>
                 </form>
             </div>

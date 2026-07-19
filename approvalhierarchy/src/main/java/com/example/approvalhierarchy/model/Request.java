@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,56 +17,67 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Request {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @NotBlank(message = "Title is required")
-    private String title;
-    
-    @Column(columnDefinition = "TEXT")
-    private String description;
-    
-    @NotNull(message = "Requestor is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "requestor_id")
-    private Employee requestor;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "approver_id")
-    private Employee approver;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "current_approver_id")
-    private Employee currentApprover;
-    private RequestStatus status1;
 
-    @Enumerated(EnumType.STRING)
-    private RequestStatus status = RequestStatus.PENDING;
-    
-    private LocalDateTime createdAt = LocalDateTime.now();
-    
-    private LocalDateTime updatedAt;
-    
-    @Column(columnDefinition = "TEXT")
-    private String comments;
-    
-    // When escalation happened because the immediate manager was unavailable
-    @Column(nullable = false)
-    private Boolean escalated = false;
-    
-    // List of managers who were unavailable before the request reached the current approver
-    @Column(columnDefinition = "TEXT")
-    private String escalationPath;
-    
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-    
-    public enum RequestStatus {
-        PENDING, APPROVED, REJECTED, CANCELLED
-    }
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@NotBlank(message = "Title is required. This is a manually configured error.")
+	private String title;
+
+	@Column(columnDefinition = "TEXT") // greater than varchar(255)
+	private String description;
+
+	@ManyToOne(fetch = FetchType.LAZY) // check last line for full clarity
+	@JoinColumn(name = "requestor_id") // -->FK that points to the Employee who created the request.
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
+	private Employee requestor;// saare employees under requestor id will be referred as requestors
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "approver_id")
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
+	private Employee approver;// desc- FK of the Employee who FINALLY approved/rejected request (set ONCE the
+								// workflow finishes-after the request is finally marked APPROVED or REJECTED.).
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "current_approver_id")
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
+	private Employee currentApprover;// FK pointing to the Employee currently responsible for acting on request (used
+										// while it’s moving up the hierarchy). Once request finishes,
+										// current_approver_id=null or =approver_id.
+
+	@Enumerated(EnumType.STRING)
+	private RequestStatus status = RequestStatus.PENDING;// Current workflow state – PENDING, APPROVED, REJECTED,
+															// CANCELLED.
+
+	private LocalDateTime createdAt = LocalDateTime.now();
+
+	private LocalDateTime updatedAt;
+
+	@Column(columnDefinition = "TEXT")
+	private String comments;// optional text for both approver and requestor
+
+	@Column(nullable = false)
+	private Boolean escalated = false;// Stored 0(false)/1(true) in MySQL; standard boolean representation. true = the
+										// request skipped an unavailable manager and moved up the chain.
+
+	// List of managers who were unavailable before the request reached the current
+	// approver
+	@Column(columnDefinition = "TEXT")
+	private String escalationPath;// Textual list (comma‑separated) of unavailable manager IDs before
+									// request reached its current approver.
+
+	@PreUpdate
+	protected void onUpdate() {
+		updatedAt = LocalDateTime.now();
+	}
+
+	public enum RequestStatus {
+		PENDING, APPROVED, REJECTED, CANCELLED
+	}
 
 	public Long getId() {
 		return id;
@@ -106,11 +120,11 @@ public class Request {
 	}
 
 	public RequestStatus getStatus() {
-		return status1;
+		return status;
 	}
 
 	public void setStatus(RequestStatus status) {
-		this.status1 = status;
+		this.status = status;
 	}
 
 	public LocalDateTime getCreatedAt() {
@@ -152,19 +166,26 @@ public class Request {
 	public void setEscalationPath(String escalationPath) {
 		this.escalationPath = escalationPath;
 	}
-    public Employee getCurrentApprover() {
-        return currentApprover;
-    }
 
-    public void setCurrentApprover(Employee currentApprover) {
-        this.currentApprover = currentApprover;
-    }
+	public Employee getCurrentApprover() {
+		return currentApprover;
+	}
 
-    public RequestStatus getStatus1() {
-       return status;
-}
+	public void setCurrentApprover(Employee currentApprover) {
+		this.currentApprover = currentApprover;
+	}
 
-public void setStatus1(RequestStatus status) {
-    this.status = status;
 }
-}
+// so like fetch lazy is used here for a foreign key type shi column, in which
+// this column(requestor_id) holds references to the employee table. Now
+// everytime some row of request fetched,request_id will also be fetched,but
+// request_id holds entire employee details in each column(or atleast points to
+// it),so will the entire thing be loaded?
+// No when fetch type lazy. Only the pointers will be loaded. Only when
+// getRequestor() or other such sub getters/setters used,will the data be
+// actually loaded from the target tabe
+
+// is my concept spot on. YES OR NO
+
+// FAQ:1.btw cant many requests have many approvers?
+// so its escalation,so at a time one request shld be handled by one person only

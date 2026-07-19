@@ -12,6 +12,8 @@
     <div class="card mb-4">
         <div class="card-body">
             <p><strong>ID:</strong> <span th:text="${request.id}"></span></p>
+            <p><strong>Title:</strong> <span th:text="${request.title}"></span></p>
+            <p><strong>Description:</strong> <span th:text="${request.description}"></span></p>
             <p><strong>Requestor:</strong> <span th:text="${request.requestor.name}"></span></p>
             <p><strong>Approver:</strong> <span th:text="${request.approver != null ? request.approver.name : 'N/A'}"></span></p>
             <p><strong>Status:</strong>
@@ -24,16 +26,24 @@
         </div>
         <div class="card-footer">
             <a href="/requests" class="btn btn-secondary">Back to List</a>
-            <a th:if="${request.status.name() == 'PENDING'}"
-               th:href="@{'/requests/approve/' + ${request.id}}"
-               class="btn btn-success ms-2">Approve</a>
-            <a th:if="${request.status.name() == 'PENDING'}"
-               th:href="@{'/requests/reject/' + ${request.id}}"
-               class="btn btn-danger ms-2">Reject</a>
-            <a th:if="${request.status.name() == 'PENDING'}"
-               th:href="@{'/requests/reassign/' + ${request.id}}"
-               class="btn btn-warning ms-2">Reassign</a>
-            <a th:href="@{'/requests/cancel/' + ${request.id}}"
+            
+            <th:block th:unless="${request.requestor.id == currentEmployeeId}">
+                <a th:if="${request.status.name() == 'PENDING'}"
+                   th:href="@{'/requests/approve/' + ${request.id}}"
+                   class="btn btn-success ms-2">Approve</a>
+                <a th:if="${request.status.name() == 'PENDING'}"
+                   th:href="@{'/requests/reject/' + ${request.id}}"
+                   class="btn btn-danger ms-2">Reject</a>
+                <a th:if="${request.status.name() == 'PENDING'}"
+                   th:href="@{'/requests/reassign/' + ${request.id}}"
+                   class="btn btn-warning ms-2">Reassign</a>
+                <a th:if="${request.status.name() == 'PENDING' and request.approver != null and request.approver.manager != null}"
+                   th:href="@{'/requests/escalate/' + ${request.id}}"
+                   class="btn btn-primary ms-2">Escalate</a>
+            </th:block>
+            
+            <a th:if="${request.requestor.id == currentEmployeeId and request.status.name() == 'PENDING'}"
+               th:href="@{'/requests/cancel/' + ${request.id}}"
                class="btn btn-outline-secondary ms-2">Cancel</a>
         </div>
     </div>
