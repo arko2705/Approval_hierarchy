@@ -3,8 +3,8 @@
 <body>
     <div th:fragment="employee-node(nodeEmployee)">
         <div class="employee-card mb-2">
-            <div class="fw-bold" th:text="${nodeEmployee?.name ?: 'Unknown'}">Employee Name</div>
-            <div class="text-muted" th:text="${nodeEmployee?.position ?: 'N/A'}">Position</div>
+            <div class="emp-name" th:text="${nodeEmployee?.name ?: 'Unknown'}">Employee Name</div>
+            <div class="emp-position" th:text="${nodeEmployee?.position ?: 'N/A'}">Position</div>
         </div>
         <ul th:if="${nodeEmployee != null and not #lists.isEmpty(nodeEmployee.subordinates)}">
             <li th:each="sub : ${nodeEmployee.subordinates}">

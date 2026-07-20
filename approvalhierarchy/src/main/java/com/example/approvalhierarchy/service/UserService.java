@@ -40,6 +40,10 @@ public class UserService {
 
     @Transactional
     public User registerNewUser(User user, String roleName) {
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new RuntimeException("Username '" + user.getUsername() + "' is already taken!");
+        }
+        
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         
         Role userRole = roleRepository.findByName(roleName)

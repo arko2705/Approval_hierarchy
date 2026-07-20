@@ -58,10 +58,18 @@ public class AdminController {
     public String updateUser(@PathVariable Long id, 
                              @ModelAttribute User user,
                              @RequestParam(value = "roleIds", required = false) List<Long> roleIds,
-                             @RequestParam(value = "employeeId", required = false) Long employeeId) {
+                             @RequestParam(value = "employeeId", required = false) Long employeeId,
+                             org.springframework.web.servlet.mvc.support.RedirectAttributes attributes) {
         User existingUser = userService.getUserById(id).orElse(null);
         if (existingUser == null) {
             return "redirect:/admin?error=usernotfound";
+        }
+        
+        // Check for duplicate username (only if it changed)
+        if (!existingUser.getUsername().equals(user.getUsername()) 
+                && userService.existsByUsername(user.getUsername())) {
+            attributes.addFlashAttribute("error", "Username '" + user.getUsername() + "' is already taken!");
+            return "redirect:/admin/users/" + id + "/edit";
         }
         
         // Update basic info

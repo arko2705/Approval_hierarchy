@@ -139,12 +139,8 @@ public class RequestController {
     public String showApproveForm(@PathVariable Long id, Model model, Principal principal, RedirectAttributes attributes) {
         try {
             Request request = requestService.getRequestById(id);
-            if (principal != null) {
-                com.example.approvalhierarchy.model.User currentUser = userService.getUserByUsername(principal.getName()).orElse(null);
-                if (currentUser != null && currentUser.getEmployee() != null && currentUser.getEmployee().getId().equals(request.getRequestor().getId())) {
-                    attributes.addFlashAttribute("error", "You cannot approve your own request!");
-                    return "redirect:/requests";
-                }
+            if (!isAuthorizedApprover(request, principal)) {
+                return "error/403";
             }
             // Check if the request is in PENDING state
             if (request.getStatus() == Request.RequestStatus.PENDING) {
@@ -161,18 +157,17 @@ public class RequestController {
     }
 
     @PostMapping("/approve/{id}")
-    public String approveRequest(@PathVariable Long id, Principal principal, RedirectAttributes attributes) {
+    public String approveRequest(@PathVariable Long id, 
+                                 @RequestParam(required = false) String comments,
+                                 Principal principal, 
+                                 RedirectAttributes attributes) {
         try {
             Request req = requestService.getRequestById(id);
-            if (principal != null) {
-                com.example.approvalhierarchy.model.User currentUser = userService.getUserByUsername(principal.getName()).orElse(null);
-                if (currentUser != null && currentUser.getEmployee() != null && currentUser.getEmployee().getId().equals(req.getRequestor().getId())) {
-                    attributes.addFlashAttribute("error", "You cannot approve your own request!");
-                    return "redirect:/requests";
-                }
+            if (!isAuthorizedApprover(req, principal)) {
+                return "error/403";
             }
             
-            Request request = requestService.approveRequest(id);
+            Request request = requestService.approveRequest(id, comments);
             if (request != null) {
                 // Debug info
                 System.out.println("Request #" + id + " approved with status: " + request.getStatus());
@@ -191,12 +186,8 @@ public class RequestController {
     public String showRejectForm(@PathVariable Long id, Model model, Principal principal, RedirectAttributes attributes) {
         try {
             Request request = requestService.getRequestById(id);
-            if (principal != null) {
-                com.example.approvalhierarchy.model.User currentUser = userService.getUserByUsername(principal.getName()).orElse(null);
-                if (currentUser != null && currentUser.getEmployee() != null && currentUser.getEmployee().getId().equals(request.getRequestor().getId())) {
-                    attributes.addFlashAttribute("error", "You cannot reject your own request!");
-                    return "redirect:/requests";
-                }
+            if (!isAuthorizedApprover(request, principal)) {
+                return "error/403";
             }
             // Check if the request is in PENDING state
             if (request.getStatus() == Request.RequestStatus.PENDING) {
@@ -220,12 +211,8 @@ public class RequestController {
             
         try {
             Request req = requestService.getRequestById(id);
-            if (principal != null) {
-                com.example.approvalhierarchy.model.User currentUser = userService.getUserByUsername(principal.getName()).orElse(null);
-                if (currentUser != null && currentUser.getEmployee() != null && currentUser.getEmployee().getId().equals(req.getRequestor().getId())) {
-                    attributes.addFlashAttribute("error", "You cannot reject your own request!");
-                    return "redirect:/requests";
-                }
+            if (!isAuthorizedApprover(req, principal)) {
+                return "error/403";
             }
         } catch (RuntimeException e) {
             // let service handle if not found
@@ -276,17 +263,22 @@ public class RequestController {
     public String showReassignForm(@PathVariable Long id, Model model, Principal principal, RedirectAttributes attributes) {
         try {
             Request request = requestService.getRequestById(id);
-            if (principal != null) {
-                com.example.approvalhierarchy.model.User currentUser = userService.getUserByUsername(principal.getName()).orElse(null);
-                if (currentUser != null && currentUser.getEmployee() != null && currentUser.getEmployee().getId().equals(request.getRequestor().getId())) {
-                    attributes.addFlashAttribute("error", "You cannot reassign your own request!");
-                    return "redirect:/requests";
-                }
+            if (!isAuthorizedApprover(request, principal)) {
+                return "error/403";
             }
             // Check if the request is in PENDING state
             if (request.getStatus() == Request.RequestStatus.PENDING) {
                 model.addAttribute("request", request);
-                model.addAttribute("employees", employeeService.getAllEmployees());
+                
+                List<Employee> eligibleApprovers = request.getRequestor().getApprovalChain();
+                // Exclude the logged-in user so they can't reassign to themselves
+                com.example.approvalhierarchy.model.User currentUser = userService.getUserByUsername(principal.getName()).orElse(null);
+                if (currentUser != null && currentUser.getEmployee() != null) {
+                    Long loggedInEmpId = currentUser.getEmployee().getId();
+                    eligibleApprovers.removeIf(e -> e.getId().equals(loggedInEmpId));
+                }
+                
+                model.addAttribute("employees", eligibleApprovers);
                 return "request/reassign";
             } else {
                 attributes.addFlashAttribute("error", "Request not found or already processed!");
@@ -306,12 +298,8 @@ public class RequestController {
             
         try {
             Request req = requestService.getRequestById(id);
-            if (principal != null) {
-                com.example.approvalhierarchy.model.User currentUser = userService.getUserByUsername(principal.getName()).orElse(null);
-                if (currentUser != null && currentUser.getEmployee() != null && currentUser.getEmployee().getId().equals(req.getRequestor().getId())) {
-                    attributes.addFlashAttribute("error", "You cannot reassign your own request!");
-                    return "redirect:/requests";
-                }
+            if (!isAuthorizedApprover(req, principal)) {
+                return "error/403";
             }
         } catch (RuntimeException e) {
             // let service handle if not found
@@ -332,12 +320,8 @@ public class RequestController {
     public String showEscalateForm(@PathVariable Long id, Model model, Principal principal, RedirectAttributes attributes) {
         try {
             Request request = requestService.getRequestById(id);
-            if (principal != null) {
-                com.example.approvalhierarchy.model.User currentUser = userService.getUserByUsername(principal.getName()).orElse(null);
-                if (currentUser != null && currentUser.getEmployee() != null && currentUser.getEmployee().getId().equals(request.getRequestor().getId())) {
-                    attributes.addFlashAttribute("error", "You cannot escalate your own request!");
-                    return "redirect:/requests";
-                }
+            if (!isAuthorizedApprover(request, principal)) {
+                return "error/403";
             }
             if (request.getStatus() == Request.RequestStatus.PENDING) {
                 if (request.getApprover() == null || request.getApprover().getManager() == null) {
@@ -361,12 +345,8 @@ public class RequestController {
     public String escalateRequest(@PathVariable Long id, Principal principal, RedirectAttributes attributes) {
         try {
             Request req = requestService.getRequestById(id);
-            if (principal != null) {
-                com.example.approvalhierarchy.model.User currentUser = userService.getUserByUsername(principal.getName()).orElse(null);
-                if (currentUser != null && currentUser.getEmployee() != null && currentUser.getEmployee().getId().equals(req.getRequestor().getId())) {
-                    attributes.addFlashAttribute("error", "You cannot escalate your own request!");
-                    return "redirect:/requests";
-                }
+            if (!isAuthorizedApprover(req, principal)) {
+                return "error/403";
             }
             if (req.getApprover() == null || req.getApprover().getManager() == null) {
                 attributes.addFlashAttribute("error", "No immediate supervisor found to escalate to!");
@@ -428,5 +408,21 @@ public class RequestController {
         requestService.updateMissingCurrentApprovers();
         attributes.addFlashAttribute("success", "Fixed missing current approvers for pending requests");
         return "redirect:/requests";
+    }
+
+    private boolean isAuthorizedApprover(Request request, Principal principal) {
+        if (principal == null) return false;
+        com.example.approvalhierarchy.model.User currentUser = userService.getUserByUsername(principal.getName()).orElse(null);
+        if (currentUser == null || currentUser.getEmployee() == null) return false;
+        
+        Long currentEmpId = currentUser.getEmployee().getId();
+        
+        // Cannot process own requests
+        if (currentEmpId.equals(request.getRequestor().getId())) return false;
+        
+        // Must be the assigned approver
+        if (request.getApprover() == null || !currentEmpId.equals(request.getApprover().getId())) return false;
+        
+        return true;
     }
 }

@@ -67,7 +67,7 @@ public class RequestService {
     }
 
     @Transactional
-    public Request approveRequest(Long requestId) {
+    public Request approveRequest(Long requestId, String comments) {
         Request request = getRequestById(requestId);
         if (request == null) {
             return null;
@@ -75,6 +75,9 @@ public class RequestService {
 
         // Set the status to APPROVED - this line is crucial
         request.setStatus(Request.RequestStatus.APPROVED);
+        if (comments != null && !comments.trim().isEmpty()) {
+            request.setComments(comments);
+        }
 
         // Other logic related to approvers
         if (request.getCurrentApprover() == null) {
@@ -178,11 +181,7 @@ public class RequestService {
     }
 
     public List<Request> getRequestsByStatus(Request.RequestStatus status) {
-        if (status == Request.RequestStatus.PENDING) {
-            // FIFO order: oldest pending first
-            return requestRepository.findAllPendingOrderByCreatedAtAsc();
-        }
-        // For other statuses, keep descending order (newest first)
+        // Display latest requests first (descending order) for all statuses
         return requestRepository.findByStatusOrderByCreatedAtDesc(status);
     }
 
