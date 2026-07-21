@@ -3,112 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${dto.employee.id != null} ? 'Edit Employee' : 'Add Employee'">Employee Form — Approval Hierarchy</title>
+    <title>Employee Form - Approval Hierarchy System</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
-<header class="app-header">
-    <a href="/" class="brand text-decoration-none">
-        <div class="brand-icon">A</div>
-        Approval Hierarchy
-    </a>
-    <nav class="d-flex align-items-center gap-1">
-        <a th:href="@{/}">Dashboard</a>
-        <a class="active" th:href="@{/employees}">Employees</a>
-        <a th:href="@{/requests}">Requests</a>
-        <a th:href="@{/employees/hierarchy}">Hierarchy</a>
-    </nav>
-    <div style="width:120px;"></div>
-</header>
+    <div class="container">
+        <header class="py-3 mb-4 border-bottom">
+            <div class="d-flex flex-column flex-md-row align-items-center">
+                <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
+                    <span class="fs-4">Approval Hierarchy System</span>
+                </a>
+                <nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">
+                    <a class="me-3 py-2 text-dark text-decoration-none" th:href="@{/employees}">Employees</a>
+                    <a class="me-3 py-2 text-dark text-decoration-none" th:href="@{/requests}">Requests</a>
+                    <a class="py-2 text-dark text-decoration-none" th:href="@{/employees/hierarchy}">Hierarchy</a>
+                </nav>
+            </div>
+        </header>
 
-<div class="container page-wrapper">
-    <div class="page-header">
-        <div>
-            <h2 th:text="${dto.employee.id != null} ? 'Edit Employee' : 'Add Employee'" style="margin:0;"></h2>
-            <p class="page-subtitle" th:text="${dto.employee.id != null} ? 'Update employee information and login details.' : 'Register a new employee and create their login account.'"></p>
-        </div>
-        <a th:href="@{/employees}" class="btn btn-secondary">← Back to Employees</a>
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+    <form th:action="${dto.employee.id != null} ? @{/employees/edit/{id}(id=${dto.employee.id})} : @{/employees/add}" th:object="${dto}" method="post">
+    
+    <h4 class="mb-3">1. Employee Details</h4>
+    <div class="mb-3">
+        <label for="name" class="form-label">Full Name</label>
+        <input type="text" class="form-control" id="name" th:field="*{employee.name}" required>
     </div>
-
+    
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" th:field="*{employee.email}" required>
+    </div>
+    
     <div class="row">
-        <div class="col-lg-8">
-            <form th:action="${dto.employee.id != null} ? @{/employees/edit/{id}(id=${dto.employee.id})} : @{/employees/add}"
-                  th:object="${dto}" method="post">
-
-                <!-- Section 1 -->
-                <div class="card mb-4">
-                    <div class="card-header">1 · Employee Details</div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="name" th:field="*{employee.name}" placeholder="e.g. Jane Smith" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Work Email</label>
-                            <input type="email" class="form-control" id="email" th:field="*{employee.email}" placeholder="jane@company.com" required>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="position" class="form-label">Position / Title</label>
-                                <input type="text" class="form-control" id="position" th:field="*{employee.position}" placeholder="e.g. Senior Developer" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="department" class="form-label">Department</label>
-                                <input type="text" class="form-control" id="department" th:field="*{employee.department}" placeholder="e.g. Engineering" required>
-                            </div>
-                        </div>
-                        <div class="mb-0">
-                            <label for="manager" class="form-label">Reports To</label>
-                            <select class="form-select" id="manager" th:field="*{employee.manager}">
-                                <option value="">— No Manager (Top of hierarchy) —</option>
-                                <option th:each="mgr : ${managers}"
-                                        th:value="${mgr.id}"
-                                        th:text="${mgr.name + ' (' + mgr.position + ')'}"></option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section 2 -->
-                <div class="card mb-4">
-                    <div class="card-header">2 · Login Account</div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="username" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="username" th:field="*{username}" placeholder="username" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="password" class="form-label">
-                                    Password
-                                    <span th:if="${dto.employee.id != null}" class="text-muted" style="font-weight:400;">(leave blank to keep)</span>
-                                </label>
-                                <input type="password" class="form-control" id="password" th:field="*{password}"
-                                       th:required="${dto.employee.id == null}" placeholder="••••••••">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="role" class="form-label">Role</label>
-                                <select class="form-select" id="role" th:field="*{role}" required>
-                                    <option value="USER">Regular User</option>
-                                    <option value="MANAGER">Manager</option>
-                                    <option value="HR">HR Staff</option>
-                                    <option value="ADMIN">Administrator</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer justify-content-end">
-                        <a th:href="@{/employees}" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary" th:text="${dto.employee.id != null} ? 'Save Changes' : 'Create Employee'">Submit</button>
-                    </div>
-                </div>
-            </form>
+        <div class="col-md-6 mb-3">
+            <label for="position" class="form-label">Position</label>
+            <input type="text" class="form-control" id="position" th:field="*{employee.position}" required>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="department" class="form-label">Department</label>
+            <input type="text" class="form-control" id="department" th:field="*{employee.department}" required>
         </div>
     </div>
-</div>
+    
+    <div class="mb-3">
+        <label for="manager" class="form-label">Reports To (Manager)</label>
+        <select class="form-select" id="manager" th:field="*{employee.manager}">
+            <option value="">-- No Manager (Top Level) --</option>
+            <option th:each="mgr : ${managers}" 
+                    th:value="${mgr.id}" 
+                    th:text="${mgr.name + ' (' + mgr.position + ')'}">
+            </option>
+        </select>
+    </div>
 
-<footer>&copy; 2025 Approval Hierarchy System</footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <hr class="my-4">
+
+    <h4 class="mb-3">2. Login Details</h4>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" th:field="*{username}" required>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" th:field="*{password}" th:required="${dto.employee.id == null}">
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="role" class="form-label">Role</label>
+            <select class="form-select" id="role" th:field="*{role}" required>
+                <option value="USER">Regular User</option>
+                <option value="MANAGER">Manager</option>
+                <option value="HR">HR Staff</option>
+                <option value="ADMIN">Administrator</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+        <a th:href="@{/employees}" class="btn btn-secondary me-md-2">Cancel</a>
+        <button type="submit" class="btn btn-primary">Create Employee</button>
+    </div>
+</form>
+            </div>
+        </div>
+
+        <footer class="pt-3 mt-4 text-muted border-top">
+            &copy; 2025 Approval Hierarchy System
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
